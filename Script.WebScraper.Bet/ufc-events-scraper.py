@@ -7,6 +7,14 @@ from bs4 import BeautifulSoup
 import os
 from dotenv import load_dotenv
 
+from Factories.FighterFactory import *
+from Factories.EventFactory import *
+
+from Entities.Card import Card
+from Entities.Event import Event
+from Entities.Fighter import Fighter
+from Entities.UFCEvent import UFCEvent
+
 load_dotenv()
 
 TEST_MODE_ACTIVE=os.getenv('TEST_MODE')
@@ -16,46 +24,6 @@ eventTypes = {
     "Preliminary": "Preliminary Card",
     "EarlyPreliminary": "Early Prelims"
 }
-
-class Fighter(object):
-    def __init__(self, fighterName="", fighterRecord="", fighterImage=""):
-        self.fighterName = fighterName
-        self.fighterRecord = fighterRecord
-        self.fighterImage = fighterImage
-    def __str__(self):
-     return f"Fighter Name: {self.fighterName}\nFighter Record: {self.fighterRecord}\nFighter Image: {self.fighterImage}"
-
-class Event:
-    def __init__(self, eventWeightClass="", eventFighter1=Fighter(), eventFighter2=Fighter()):
-        self.eventWeightClass = eventWeightClass
-        self.selectedFighter = ""
-        self.eventFighter1 = eventFighter1
-        self.eventFighter2 = eventFighter2
-    def __str__(self):
-     return f"Event Weight Class: {self.eventWeightClass}\nSelected Fighter: {self.selectedFighter}\nEventFighter1: {self.eventFighter1}\nEventFighter2: {self.eventFighter2}"
-
-class Card:
-    def __init__(self, eventTime="", cardType=""):
-        self.eventTime = eventTime
-        self.cardType = cardType
-        self.cardEvents = []
-    def __str__(self):
-     return f"\n\tCard Type: {self.cardType}, Event Time: {self.eventTime}"
-
-class UFCEvent:
-    def __init__(self, eventName="", eventDate="", eventVenue=""):
-        self.eventName = eventName
-        self.eventDate = eventDate
-        self.eventVenue = eventVenue
-        self.eventCards = []
-    def printCards(self):
-        stringOfCards = ""
-        for card in self.eventCards:
-            stringOfCards += str(card)
-        return stringOfCards
-    def __str__(self):
-     return f"Event Name: {self.eventName}\nEvent Date: {self.eventDate}\nEvent Venue: {self.eventVenue}\nEvent Cards: {self.printCards()}"
-    
 
 # ========= Pulling from website =====================
 # url = "https://www.ufc.com/event/ufc-274"
@@ -88,7 +56,9 @@ clear = lambda: os.system('cls')
 clear()
 
 # ========= On Events Page - Reads all upcoming events =====================
-with open("Events_Page.html", encoding='utf8') as file:
+# with open("./mockHTMLPages/Events_Page.html", encoding='utf8') as file:
+#     eventsPage = BeautifulSoup(file, "html.parser") 
+with open("./downloadedHTMLPages/Events_Page.html", encoding='utf8') as file:
     eventsPage = BeautifulSoup(file, "html.parser") 
 
 eventsPage.prettify("utf-8")
@@ -158,13 +128,14 @@ for index, eventListItem in enumerate(eventsList):
 
     ufcEventsList.append(ufcEvent)
 
-for ufcEvent in ufcEventsList:
-    print(ufcEvent)
-    # ufcEvent.printCards()
-    print()
+# for ufcEvent in ufcEventsList:
+#     print(ufcEvent)
+#     # ufcEvent.printCards()
+#     print()
 
 if TEST_MODE_ACTIVE:
-    ufcEventLinks = ["Fight_Night_1_Page.html","Fight_Night_2_Page.html","Main_Card_Page.html"]
+    ufcEventLinks = ["./downloadedHTMLPages/FightNight_LemosvsAndrade.html","./downloadedHTMLPages/FightNight_FontvsVera.html","./downloadedHTMLPages/UFC274_OliveiravsGaethje.html"]
+    # ufcEventLinks = ["./mockHTMLPages/Fight_Night_1_Page.html","./mockHTMLPages/Fight_Night_2_Page.html","./mockHTMLPages/Main_Card_Page.html"]
 
 # print(ufcEventLinks)
     # print(link)
@@ -192,60 +163,26 @@ for eventIndex, ufcEventLink in enumerate(ufcEventLinks):
         else:
             listCards.append(tab.find("strong").getText().strip())
 
-    cardEventsDiv = eventPage.find("div", class_="c-listing__wrapper--horizontal-tabs")
-    cardEventsTabs = cardEventsDiv.find_all("details")
+    # cardEventsDiv = eventPage.find("div", class_="c-listing__wrapper--horizontal-tabs")
+    # cardEventsTabs = cardEventsDiv.find_all("details")
 
-    # print(len(cardEventsTabs))
+    # print(cardEventsTabs)
 
     # ========= On Event Page - Reads all fighters from event =====================
+    # print(listCards)
+    # print(ufcEventsList[eventIndex].eventCards[0])
 
-    def buildFighters(eventPage):
-        fightEvents = eventPage.find_all("li", class_="l-listing__item")
-        fighterNamesList = getFighterNames(fightEvents)
-        #print(fighterNamesList)
-        fighterImageList = getFighterImages(fightEvents)
-        #print(fighterImageList)
+    # TODO: This only works for main card right now. Make it work for all cards.
+    fighterList = buildFighters(eventPage)
+    # for fighter in fighterList:
+    #     print(fighter)
+    eventsList = buildEvents(eventPage, fighterList)
+    # for event in eventsList:
+    #     print(event)
 
-    def getFighterNames(fightEvents):
-        fighterNamesList = []
-        for fightEvent in fightEvents:
-            matchUpDiv = fightEvent.find_all("div", class_="c-listing-fight__corner-name")
-            fighter1Div = matchUpDiv[0]
-            fighter2Div = matchUpDiv[1]
+    ufcEventsList[eventIndex].eventCards[0].cardEvents = eventsList
 
-            fighter1Names = fighter1Div.find_all("span")
-            fighter2Names = fighter2Div.find_all("span")
-
-            if not fighter1Names:
-                fighterNamesList.append(fighter1Div.getText().strip())
-                # print(fighter1Div.getText().strip())
-            else:   
-                fullName = ""
-                for name in fighter1Names:
-                    fullName += f"{name.getText().strip()} "
-                fighterNamesList.append(fullName.strip())
-                #print(fullName.strip())
-            
-            if not fighter2Names:
-                fighterNamesList.append(fighter2Div.getText().strip())
-                # print(fighter2Div.getText().strip())
-            else:   
-                fullName = ""
-                for name in fighter2Names:
-                    fullName += f"{name.getText().strip()} "
-                fighterNamesList.append(fullName.strip())
-                # print(fullName.strip())
-
-            # print()
-        return fighterNamesList
-
-    def getFighterImages(fightEvents):
-        fighterImageList = []
-        for fightEvent in fightEvents:
-            fighterImages = fightEvent.find_all("img", class_="image-style-event-fight-card-upper-body-of-standing-athlete")
-            for image in fighterImages:
-                fighterImageList.append(image['src'])
-                # print(image['src'])
-        return fighterImageList
-
-    buildFighters(eventPage)
+for ufcEvent in ufcEventsList:
+    print(ufcEvent)
+    # ufcEvent.printCards()
+    print()
