@@ -15,9 +15,21 @@ from Entities.Event import Event
 from Entities.Fighter import Fighter
 from Entities.UFCEvent import UFCEvent
 
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+
 load_dotenv()
 
 TEST_MODE_ACTIVE=os.getenv('TEST_MODE')
+CHROME_DRIVER_PATH=os.getenv('CHROME_DRIVER_PATH')
+UFC_EVENTS_PAGE=os.getenv('UFC_EVENTS_PAGE')
+
+clear = lambda: os.system('cls')
+clear()
+
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+driver.get(UFC_EVENTS_PAGE)
 
 eventTypes = {
     "Main": "Main Card",
@@ -31,33 +43,10 @@ eventTypes = {
 # result = requests.get(url)
 # eventPage = BeautifulSoup(result.text, "html.parser")
 
-# ========= Writing html to file =====================
-# url = "https://www.ufc.com/event/ufc-274"
-
-# result = requests.get(url)
-# doc = BeautifulSoup(result.text, "html.parser")
-# html = doc.prettify("utf-8")
-
-# with open("Main_Card_Page.html", "wb") as file:
-#     file.write(html)
-
-# ========= Read Locally =====================
-# print(doc.prettify())
-        
-# with is short-form way to work with files with a built in error handler
-#with open("UFC 274 _ Oliveira vs Gaethje _ UFC.html", "r") as file:
-    # use BeautifulSoup constructore to pass in the html file and use a specific parser
-    #doc = BeautifulSoup(file, "html.parser") 
-
 ufcEventsList = []
 ufcEventLinks = []
 
-clear = lambda: os.system('cls')
-clear()
-
 # ========= On Events Page - Reads all upcoming events =====================
-# with open("./mockHTMLPages/Events_Page.html", encoding='utf8') as file:
-#     eventsPage = BeautifulSoup(file, "html.parser") 
 with open("./downloadedHTMLPages/Events_Page.html", encoding='utf8') as file:
     eventsPage = BeautifulSoup(file, "html.parser") 
 
@@ -69,7 +58,7 @@ for index, eventListItem in enumerate(eventsList):
     if index == 3 : break
     linkDiv = eventsList[index].find("h3", class_="c-card-event--result__headline")
     linkHrefEl = linkDiv.find("a", href=re.compile("/event/ufc"))
-    link = f"https://www.ufc.com{linkHrefEl.get('href')}"
+    link = f"{linkHrefEl.get('href')}"
     ufcEventLinks.append(link)
 
     eventType = ""
@@ -182,7 +171,9 @@ for eventIndex, ufcEventLink in enumerate(ufcEventLinks):
 
     ufcEventsList[eventIndex].eventCards[0].cardEvents = eventsList
 
-for ufcEvent in ufcEventsList:
-    print(ufcEvent)
-    # ufcEvent.printCards()
-    print()
+# for ufcEvent in ufcEventsList:
+#     print(ufcEvent)
+#     # ufcEvent.printCards()
+#     print()
+
+driver.quit()
