@@ -4,8 +4,6 @@ def buildFighters(eventPage):
     fightEvents = eventPage.find_all("li", class_="l-listing__item")
     fighterNamesList = getFighterNames(fightEvents)
     #print(fighterNamesList)
-    #fighterRecordList = getFighterRecords(fightEvents)
-    #print(fighterRecordList)
     fighterImageList = getFighterImages(fightEvents)
     #print(fighterImageList)
     fighterList = []

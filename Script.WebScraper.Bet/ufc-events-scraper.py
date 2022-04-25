@@ -18,6 +18,9 @@ from Entities.UFCEvent import UFCEvent
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 
 load_dotenv()
 
@@ -28,37 +31,32 @@ UFC_EVENTS_PAGE=os.getenv('UFC_EVENTS_PAGE')
 clear = lambda: os.system('cls')
 clear()
 
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-driver.get(UFC_EVENTS_PAGE)
-
 eventTypes = {
     "Main": "Main Card",
     "Preliminary": "Preliminary Card",
     "EarlyPreliminary": "Early Prelims"
 }
 
-# ========= Pulling from website =====================
-# url = "https://www.ufc.com/event/ufc-274"
-
-# result = requests.get(url)
-# eventPage = BeautifulSoup(result.text, "html.parser")
-
 ufcEventsList = []
 ufcEventLinks = []
 
 # ========= On Events Page - Reads all upcoming events =====================
-with open("./downloadedHTMLPages/Events_Page.html", encoding='utf8') as file:
-    eventsPage = BeautifulSoup(file, "html.parser") 
+if TEST_MODE_ACTIVE == "True":
+    with open("./downloadedHTMLPages/Events_Page.html", encoding='utf8') as file:
+        eventsPage = BeautifulSoup(file, "html.parser") 
+else:
+    result = requests.get(UFC_EVENTS_PAGE)
+    eventsPage = BeautifulSoup(result.text, "html.parser")
 
 eventsPage.prettify("utf-8")
 
 eventsList = eventsPage.find_all("li", class_="l-listing__item")
 
 for index, eventListItem in enumerate(eventsList):
-    if index == 3 : break
+    if index == 2 : break
     linkDiv = eventsList[index].find("h3", class_="c-card-event--result__headline")
     linkHrefEl = linkDiv.find("a", href=re.compile("/event/ufc"))
-    link = f"{linkHrefEl.get('href')}"
+    link = f"https://www.ufc.com{linkHrefEl.get('href')}"
     ufcEventLinks.append(link)
 
     eventType = ""
@@ -122,8 +120,8 @@ for index, eventListItem in enumerate(eventsList):
 #     # ufcEvent.printCards()
 #     print()
 
-if TEST_MODE_ACTIVE:
-    ufcEventLinks = ["./downloadedHTMLPages/FightNight_LemosvsAndrade.html","./downloadedHTMLPages/FightNight_FontvsVera.html","./downloadedHTMLPages/UFC274_OliveiravsGaethje.html"]
+if TEST_MODE_ACTIVE == "True":
+    ufcEventLinks = ["./downloadedHTMLPages/FightNight_FontvsVera.html","./downloadedHTMLPages/UFC274_OliveiravsGaethje.html"]
     # ufcEventLinks = ["./mockHTMLPages/Fight_Night_1_Page.html","./mockHTMLPages/Fight_Night_2_Page.html","./mockHTMLPages/Main_Card_Page.html"]
 
 # print(ufcEventLinks)
@@ -133,9 +131,12 @@ if TEST_MODE_ACTIVE:
     # print(f"eventVenue: {eventVenue}\n")
 
 for eventIndex, ufcEventLink in enumerate(ufcEventLinks):
-    # ========= On Events Page - Reads all upcoming events =====================
-    with open(ufcEventLink, encoding='utf8') as file:
-        eventPage = BeautifulSoup(file, "html.parser") 
+    if TEST_MODE_ACTIVE == "True":
+        with open(ufcEventLink, encoding='utf8') as file:
+            eventPage = BeautifulSoup(file, "html.parser")
+    else:
+        result = requests.get(ufcEventLink)
+        eventPage = BeautifulSoup(result.text, "html.parser")
 
     eventPage.prettify("utf-8")
 
@@ -165,15 +166,25 @@ for eventIndex, ufcEventLink in enumerate(ufcEventLinks):
     fighterList = buildFighters(eventPage)
     # for fighter in fighterList:
     #     print(fighter)
+
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+    driver.get(ufcEventLink)
+
+    #WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,"//*[@title='Accept Cookies Button']"))).click()
+    xButton = WebDriverWait(driver, timeout=10).until(lambda d: d.find_element(By.XPATH, "//*[@title='Accept Cookies Button']"))
+    # xButton.click()
+    driver.execute_script("arguments[0].click();", xButton)
+
     eventsList = buildEvents(eventPage, fighterList)
     # for event in eventsList:
     #     print(event)
 
     ufcEventsList[eventIndex].eventCards[0].cardEvents = eventsList
 
-# for ufcEvent in ufcEventsList:
-#     print(ufcEvent)
-#     # ufcEvent.printCards()
-#     print()
+    if TEST_MODE_ACTIVE == "False":
+        driver.quit()
 
-driver.quit()
+for ufcEvent in ufcEventsList:
+    print(ufcEvent)
+    # ufcEvent.printCards()
+    print()
