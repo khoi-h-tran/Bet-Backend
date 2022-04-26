@@ -24,7 +24,6 @@ from selenium.webdriver.support import expected_conditions as EC
 
 load_dotenv()
 
-TEST_MODE_ACTIVE=os.getenv('TEST_MODE')
 CHROME_DRIVER_PATH=os.getenv('CHROME_DRIVER_PATH')
 UFC_EVENTS_PAGE=os.getenv('UFC_EVENTS_PAGE')
 
@@ -41,12 +40,8 @@ ufcEventsList = []
 ufcEventLinks = []
 
 # ========= On Events Page - Reads all upcoming events =====================
-if TEST_MODE_ACTIVE == "True":
-    with open("./downloadedHTMLPages/Events_Page.html", encoding='utf8') as file:
-        eventsPage = BeautifulSoup(file, "html.parser") 
-else:
-    result = requests.get(UFC_EVENTS_PAGE)
-    eventsPage = BeautifulSoup(result.text, "html.parser")
+result = requests.get(UFC_EVENTS_PAGE)
+eventsPage = BeautifulSoup(result.text, "html.parser")
 
 eventsPage.prettify("utf-8")
 
@@ -115,57 +110,22 @@ for index, eventListItem in enumerate(eventsList):
 
     ufcEventsList.append(ufcEvent)
 
-# for ufcEvent in ufcEventsList:
-#     print(ufcEvent)
-#     # ufcEvent.printCards()
-#     print()
-
-if TEST_MODE_ACTIVE == "True":
-    ufcEventLinks = ["./downloadedHTMLPages/FightNight_FontvsVera.html","./downloadedHTMLPages/UFC274_OliveiravsGaethje.html"]
-    # ufcEventLinks = ["./mockHTMLPages/Fight_Night_1_Page.html","./mockHTMLPages/Fight_Night_2_Page.html","./mockHTMLPages/Main_Card_Page.html"]
-
-# print(ufcEventLinks)
-    # print(link)
-    # print(f"eventName: {eventName}")
-    # print(f"eventDate: {eventDate}")
-    # print(f"eventVenue: {eventVenue}\n")
-
 for eventIndex, ufcEventLink in enumerate(ufcEventLinks):
-    if TEST_MODE_ACTIVE == "True":
-        with open(ufcEventLink, encoding='utf8') as file:
-            eventPage = BeautifulSoup(file, "html.parser")
-    else:
-        result = requests.get(ufcEventLink)
-        eventPage = BeautifulSoup(result.text, "html.parser")
+    result = requests.get(ufcEventLink)
+    eventPage = BeautifulSoup(result.text, "html.parser")
 
     eventPage.prettify("utf-8")
+    
+    # Finding how many fighters are in each card
+    fighterCountPerCard = []
+    cardEventsDiv = eventPage.find_all("details")
+    for cardEventDiv in cardEventsDiv:
+        fighterListItems = cardEventDiv.find_all("li")
+        if len(fighterListItems) > 0:
+            # multiplied by 2 because list items is each matchup, so a fighter count would be 2x
+            fighterCountPerCard.append(len(fighterListItems)*2)
 
-    cardList = eventPage.find("ul", class_="horizontal-tabs-list")
-    cardTabs = cardList.find_all("li")
-
-    listCards = []
-
-    for tab in cardTabs:
-        # if style display none is applied, it is not an included event card
-        if tab.has_attr('style'):
-            None
-            #print(tab.find("strong").getText().strip())
-        else:
-            listCards.append(tab.find("strong").getText().strip())
-
-    # cardEventsDiv = eventPage.find("div", class_="c-listing__wrapper--horizontal-tabs")
-    # cardEventsTabs = cardEventsDiv.find_all("details")
-
-    # print(cardEventsTabs)
-
-    # ========= On Event Page - Reads all fighters from event =====================
-    # print(listCards)
-    # print(ufcEventsList[eventIndex].eventCards[0])
-
-    # TODO: This only works for main card right now. Make it work for all cards.
     fighterList = buildFighters(eventPage)
-    # for fighter in fighterList:
-    #     print(fighter)
 
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     driver.get(ufcEventLink)
@@ -184,14 +144,12 @@ for eventIndex, ufcEventLink in enumerate(ufcEventLinks):
         iframe = WebDriverWait(driver, timeout=10).until(lambda d: d.find_element(By.ID, "matchup-modal-content"))
         driver.switch_to.frame(iframe)
 
-        #your code:
         fighter1Record = driver.find_element(By.CSS_SELECTOR, ".c-stat-compare__group-1.red")
         fighter1RecordList.append(fighter1Record.get_attribute('innerHTML').strip())
 
         fighter2Record = driver.find_element(By.CSS_SELECTOR, ".c-stat-compare__group-2.blue")
         fighter2RecordList.append(fighter2Record.get_attribute('innerHTML').strip())
 
-        #back to the main frame to continue the script 
         driver.switch_to.default_content()
 
     fighterRecordIndex = 0
@@ -201,14 +159,14 @@ for eventIndex, ufcEventLink in enumerate(ufcEventLinks):
         fighterList[fighterIndex+1].fighterRecord = fighter2RecordList[fighterRecordIndex]
         fighterRecordIndex += 1
 
-    eventsList = buildEvents(eventPage, fighterList)
-    # for event in eventsList:
-    #     print(event)
+    startIndex = 0
+    for fightCardCountIndex, fighterCount in enumerate(fighterCountPerCard):
+        endIndex = startIndex + fighterCount - 1
+        eventsList = buildEvents(eventPage, fighterList, startIndex, endIndex)
+        ufcEventsList[eventIndex].eventCards[fightCardCountIndex].cardEvents = eventsList
+        startIndex += fighterCount
 
-    ufcEventsList[eventIndex].eventCards[0].cardEvents = eventsList
-
-    if TEST_MODE_ACTIVE == "False":
-        driver.quit()
+    driver.quit()
 
 for ufcEvent in ufcEventsList:
     print(ufcEvent)
