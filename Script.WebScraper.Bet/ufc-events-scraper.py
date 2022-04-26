@@ -53,7 +53,7 @@ eventsPage.prettify("utf-8")
 eventsList = eventsPage.find_all("li", class_="l-listing__item")
 
 for index, eventListItem in enumerate(eventsList):
-    if index == 2 : break
+    if index == 1 : break
     linkDiv = eventsList[index].find("h3", class_="c-card-event--result__headline")
     linkHrefEl = linkDiv.find("a", href=re.compile("/event/ufc"))
     link = f"https://www.ufc.com{linkHrefEl.get('href')}"
@@ -170,10 +170,36 @@ for eventIndex, ufcEventLink in enumerate(ufcEventLinks):
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     driver.get(ufcEventLink)
 
-    #WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,"//*[@title='Accept Cookies Button']"))).click()
-    xButton = WebDriverWait(driver, timeout=10).until(lambda d: d.find_element(By.XPATH, "//*[@title='Accept Cookies Button']"))
-    # xButton.click()
-    driver.execute_script("arguments[0].click();", xButton)
+    acceptButton = WebDriverWait(driver, timeout=10).until(lambda d: d.find_element(By.XPATH, "//*[@title='Accept Cookies Button']"))
+    driver.execute_script("arguments[0].click();", acceptButton)
+
+    matchUps = WebDriverWait(driver, timeout=10).until(lambda d: d.find_elements(By.CLASS_NAME, "c-listing-fight"))
+
+    fighter1RecordList = []
+    fighter2RecordList = []
+
+    for matchUp in matchUps:
+        driver.execute_script("arguments[0].click();", matchUp)
+
+        iframe = WebDriverWait(driver, timeout=10).until(lambda d: d.find_element(By.ID, "matchup-modal-content"))
+        driver.switch_to.frame(iframe)
+
+        #your code:
+        fighter1Record = driver.find_element(By.CSS_SELECTOR, ".c-stat-compare__group-1.red")
+        fighter1RecordList.append(fighter1Record.get_attribute('innerHTML').strip())
+
+        fighter2Record = driver.find_element(By.CSS_SELECTOR, ".c-stat-compare__group-2.blue")
+        fighter2RecordList.append(fighter2Record.get_attribute('innerHTML').strip())
+
+        #back to the main frame to continue the script 
+        driver.switch_to.default_content()
+
+    fighterRecordIndex = 0
+
+    for fighterIndex in range(0, len(fighterList), 2):
+        fighterList[fighterIndex].fighterRecord = fighter1RecordList[fighterRecordIndex]
+        fighterList[fighterIndex+1].fighterRecord = fighter2RecordList[fighterRecordIndex]
+        fighterRecordIndex += 1
 
     eventsList = buildEvents(eventPage, fighterList)
     # for event in eventsList:
