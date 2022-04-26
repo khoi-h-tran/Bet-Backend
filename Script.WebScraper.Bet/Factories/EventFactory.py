@@ -1,13 +1,13 @@
 from Entities.Event import Event
 
-def buildEvents(eventPage, fighterList):
+def buildEvents(eventPage, fighterList, fighterIndexStart, fighterIndexEnd):
     fightEvents = eventPage.find_all("li", class_="l-listing__item")
     weightClassList = getFighterWeightClass(fightEvents)
     eventList = []
 
     weightClassIndex = 0
 
-    for fighterIndex in range(0,len(fighterList),2):
+    for fighterIndex in range(fighterIndexStart,fighterIndexEnd,2):
         eventList.append(Event(weightClassList[weightClassIndex], fighterList[fighterIndex], fighterList[fighterIndex+1]))
         weightClassIndex += 1
 
