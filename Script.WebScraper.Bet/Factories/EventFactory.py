@@ -13,6 +13,8 @@ def buildEvents(eventPage, fighterList, fighterIndexStart, fighterIndexEnd):
 
     # print(weightClassList)
     # print(fighterList)
+    # for event in eventList:
+    #     print(event)
     return eventList
 
 def getFighterWeightClass(fightEvents):

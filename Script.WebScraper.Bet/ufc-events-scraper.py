@@ -22,6 +22,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
+import json
+
 load_dotenv()
 
 CHROME_DRIVER_PATH=os.getenv('CHROME_DRIVER_PATH')
@@ -118,9 +120,14 @@ for eventIndex, ufcEventLink in enumerate(ufcEventLinks):
     
     # Finding how many fighters are in each card
     fighterCountPerCard = []
-    cardEventsDiv = eventPage.find_all("details")
+    # cardEventsDiv = eventPage.find_all("div", class_="details-wrapper")
+    # cardEventsDiv = eventPage.find_all("ul", class_="l-listing__group--bordered")
+    # cardEventsDiv = eventPage.find_all("details")
+    cardEventsDiv = eventPage.find_all("ul", class_="l-listing__group--bordered")
+    # print(f"cardEventsDiv {len(cardEventsDiv)}")
     for cardEventDiv in cardEventsDiv:
         fighterListItems = cardEventDiv.find_all("li")
+        # print(f"fighterListItems {len(fighterListItems)}")
         if len(fighterListItems) > 0:
             # multiplied by 2 because list items is each matchup, so a fighter count would be 2x
             fighterCountPerCard.append(len(fighterListItems)*2)
@@ -160,15 +167,24 @@ for eventIndex, ufcEventLink in enumerate(ufcEventLinks):
         fighterRecordIndex += 1
 
     startIndex = 0
+    # print(fighterCountPerCard)
     for fightCardCountIndex, fighterCount in enumerate(fighterCountPerCard):
         endIndex = startIndex + fighterCount - 1
         eventsList = buildEvents(eventPage, fighterList, startIndex, endIndex)
         ufcEventsList[eventIndex].eventCards[fightCardCountIndex].cardEvents = eventsList
         startIndex += fighterCount
 
+    # for fighter in fighterList:
+    #     print(fighter)
     driver.quit()
 
-for ufcEvent in ufcEventsList:
-    print(ufcEvent)
-    # ufcEvent.printCards()
-    print()
+jsonString  = json.dumps(ufcEventsList)
+print(jsonString)
+
+# with open('data.json', 'w', encoding='utf-8') as f:
+#     json.dump(ufcEventsList, default=vars)
+
+# for ufcEvent in ufcEventsList:
+#     print(ufcEvent)
+#     # ufcEvent.printCards()
+#     print()

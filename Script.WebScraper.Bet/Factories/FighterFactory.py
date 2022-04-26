@@ -5,10 +5,12 @@ def buildFighters(eventPage):
     fighterNamesList = getFighterNames(fightEvents)
     #print(fighterNamesList)
     fighterImageList = getFighterImages(fightEvents)
-    #print(fighterImageList)
+    # print(fighterImageList)
     fighterList = []
-    for fighterName in fighterNamesList:
-        fighterList.append(Fighter(fighterName,"",""))
+    # for image in fighterImageList:
+    #     print(image)
+    for fighterIndex, fighterName in enumerate(fighterNamesList):
+        fighterList.append(Fighter(fighterName,"",fighterImageList[fighterIndex]))
     # for fighter in fighterList:
     #     print(fighter)
     return fighterList
@@ -49,8 +51,8 @@ def getFighterNames(fightEvents):
 def getFighterImages(fightEvents):
     fighterImageList = []
     for fightEvent in fightEvents:
-        fighterImages = fightEvent.find_all("img", class_="image-style-event-fight-card-upper-body-of-standing-athlete")
+        fighterImages = fightEvent.find_all("img")
+        # fighterImages = fightEvent.find_all("img", class_="image-style-event-fight-card-upper-body-of-standing-athlete")
         for image in fighterImages:
             fighterImageList.append(image['src'])
-            # print(image['src'])
     return fighterImageList
