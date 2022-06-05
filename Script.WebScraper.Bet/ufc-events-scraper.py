@@ -1,5 +1,6 @@
 
 from datetime import datetime
+from pprint import pprint
 import re
 import requests
 from bs4 import BeautifulSoup
@@ -11,9 +12,14 @@ from Factories.FighterFactory import *
 from Factories.EventFactory import *
 
 from Entities.Card import Card
+from Entities.Card import CardSchema
 from Entities.Event import Event
+from Entities.Event import EventSchema
 from Entities.Fighter import Fighter
+from Entities.Fighter import FighterSchema
 from Entities.UFCEvent import UFCEvent
+from Entities.UFCEvent import UFCEventSchema
+from Entities.UFCEvent import UFCEventsListSchema
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -178,11 +184,14 @@ for eventIndex, ufcEventLink in enumerate(ufcEventLinks):
     #     print(fighter)
     driver.quit()
 
-jsonString  = json.dumps(ufcEventsList)
-print(jsonString)
+jsonUFCEventsList = []
 
-# with open('data.json', 'w', encoding='utf-8') as f:
-#     json.dump(ufcEventsList, default=vars)
+for ufcEvent in ufcEventsList:
+    schemaUfcEvents = UFCEventSchema()
+    jsonResult = schemaUfcEvents.dump(ufcEvent)
+    jsonUFCEventsList.append(jsonResult)
+
+print(jsonUFCEventsList)
 
 # for ufcEvent in ufcEventsList:
 #     print(ufcEvent)
