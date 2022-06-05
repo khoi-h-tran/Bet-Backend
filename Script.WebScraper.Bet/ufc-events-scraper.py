@@ -28,6 +28,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
+import pyrebase
+from Firebase.Config import config
+
 import json
 
 load_dotenv()
@@ -191,7 +194,9 @@ for ufcEvent in ufcEventsList:
     jsonResult = schemaUfcEvents.dump(ufcEvent)
     jsonUFCEventsList.append(jsonResult)
 
-print(jsonUFCEventsList)
+firebase = pyrebase.initialize_app(config)
+db = firebase.database()
+db.set(jsonUFCEventsList)
 
 # for ufcEvent in ufcEventsList:
 #     print(ufcEvent)
