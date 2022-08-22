@@ -1,5 +1,6 @@
 
 from datetime import datetime
+from lib2to3.pgen2.literals import test
 from pprint import pprint
 import re
 import requests
@@ -90,21 +91,18 @@ for index, eventListItem in enumerate(eventsList):
         timeMain = datetime.fromtimestamp(int(timeStampMain)).strftime('%#I%p')
         mainCard = Card(timeMain, eventTypes["Main"])
         listCardPerEvent.append(mainCard)
-        #print(f"timeMain: {timeMain}")
 
     timeStampPrelims = dateDiv.get("data-prelims-card-timestamp")
     if timeStampPrelims != '':
         timePrelims = datetime.fromtimestamp(int(timeStampPrelims)).strftime('%#I%p')
         prelimCard = Card(timePrelims, eventTypes["Preliminary"])
         listCardPerEvent.append(prelimCard)
-        #print(f"timePrelims: {timePrelims}")
 
     timeStampEarlyPrelims = dateDiv.get("data-early-card-timestamp")
     if timeStampEarlyPrelims != '':
         timeEarlyPrelims = datetime.fromtimestamp(int(timeStampEarlyPrelims)).strftime('%#I%p')
         earlyPrelimCard = Card(timeEarlyPrelims, eventTypes["EarlyPreliminary"])
         listCardPerEvent.append(earlyPrelimCard)
-        #print(f"timeEarlyPrelims: {timeEarlyPrelims}")
 
     venueDiv = eventsList[index].find("div", class_="field field--name-taxonomy-term-title field--type-ds field--label-hidden field__item")
     venue = venueDiv.getText().strip()
@@ -117,9 +115,9 @@ for index, eventListItem in enumerate(eventsList):
 
     for card in listCardPerEvent:
         ufcEvent.eventCards.append(card)
-        #print(card)
 
     ufcEventsList.append(ufcEvent)
+
 
 for eventIndex, ufcEventLink in enumerate(ufcEventLinks):
     result = requests.get(ufcEventLink)
@@ -129,14 +127,12 @@ for eventIndex, ufcEventLink in enumerate(ufcEventLinks):
     
     # Finding how many fighters are in each card
     fighterCountPerCard = []
-    # cardEventsDiv = eventPage.find_all("div", class_="details-wrapper")
-    # cardEventsDiv = eventPage.find_all("ul", class_="l-listing__group--bordered")
-    # cardEventsDiv = eventPage.find_all("details")
+
     cardEventsDiv = eventPage.find_all("ul", class_="l-listing__group--bordered")
-    # print(f"cardEventsDiv {len(cardEventsDiv)}")
+
     for cardEventDiv in cardEventsDiv:
         fighterListItems = cardEventDiv.find_all("li")
-        # print(f"fighterListItems {len(fighterListItems)}")
+
         if len(fighterListItems) > 0:
             # multiplied by 2 because list items is each matchup, so a fighter count would be 2x
             fighterCountPerCard.append(len(fighterListItems)*2)
@@ -154,10 +150,14 @@ for eventIndex, ufcEventLink in enumerate(ufcEventLinks):
     fighter1RecordList = []
     fighter2RecordList = []
 
+    # Selenium required to click on match ups in order to extract figher records
     for matchUp in matchUps:
+        # Clicking each matchup
         driver.execute_script("arguments[0].click();", matchUp)
-
-        iframe = WebDriverWait(driver, timeout=10).until(lambda d: d.find_element(By.ID, "matchup-modal-content"))
+        # Waiting until the iframe loads the match up details
+        matchUpDetails = WebDriverWait(driver, timeout=10).until(lambda d: d.find_element(By.CLASS_NAME, "dialog-off-canvas-main-canvas"))
+        iframe = WebDriverWait(driver, timeout=10).until(lambda d: d.find_element(By.TAG_NAME, "iframe"))
+        # Switch to the new iframe (similar to dialog or modal)
         driver.switch_to.frame(iframe)
 
         fighter1Record = driver.find_element(By.CSS_SELECTOR, ".c-stat-compare__group-1.red")
@@ -176,15 +176,13 @@ for eventIndex, ufcEventLink in enumerate(ufcEventLinks):
         fighterRecordIndex += 1
 
     startIndex = 0
-    # print(fighterCountPerCard)
+
     for fightCardCountIndex, fighterCount in enumerate(fighterCountPerCard):
         endIndex = startIndex + fighterCount - 1
         eventsList = buildEvents(eventPage, fighterList, startIndex, endIndex)
         ufcEventsList[eventIndex].eventCards[fightCardCountIndex].cardEvents = eventsList
         startIndex += fighterCount
 
-    # for fighter in fighterList:
-    #     print(fighter)
     driver.quit()
 
 jsonUFCEventsList = []
@@ -197,8 +195,3 @@ for ufcEvent in ufcEventsList:
 firebase = pyrebase.initialize_app(config)
 db = firebase.database()
 db.set(jsonUFCEventsList)
-
-# for ufcEvent in ufcEventsList:
-#     print(ufcEvent)
-#     # ufcEvent.printCards()
-#     print()
