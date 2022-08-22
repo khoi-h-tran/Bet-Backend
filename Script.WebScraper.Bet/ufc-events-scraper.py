@@ -32,6 +32,9 @@ from selenium.webdriver.support import expected_conditions as EC
 import pyrebase
 from Firebase.Config import config
 
+from google.oauth2 import service_account
+from google.auth.transport.requests import AuthorizedSession
+
 import json
 
 load_dotenv()
@@ -192,6 +195,26 @@ for ufcEvent in ufcEventsList:
     jsonResult = schemaUfcEvents.dump(ufcEvent)
     jsonUFCEventsList.append(jsonResult)
 
-firebase = pyrebase.initialize_app(config)
-db = firebase.database()
-db.set(jsonUFCEventsList)
+print(jsonUFCEventsList)
+        # # Define the required scopes
+        # scopes = [
+        #   "https://www.googleapis.com/auth/userinfo.email",
+        #   "https://www.googleapis.com/auth/firebase.database"
+        # ]
+
+        # # Authenticate a credential with the service account
+        # credentials = service_account.Credentials.from_service_account_file(
+        #     "./Firebase/betapp-dc664-firebase-adminsdk-e8knc-75ba7d8701.json", scopes=scopes)
+
+        # # Use the credentials object (taken from Firebase Console for Service Accounts) to authenticate a Requests session.
+        # authed_session = AuthorizedSession(credentials)
+        # # Use authorized session to write data
+        # response = authed_session.put(
+        #     "https://betapp-dc664-default-rtdb.firebaseio.com/UFCEvents.json", jsonUFCEventsList)
+
+        # print(response.content)
+
+# Write to test database with no authentication
+# firebase = pyrebase.initialize_app(config)
+# db = firebase.database()
+# db.set(jsonUFCEventsList)
