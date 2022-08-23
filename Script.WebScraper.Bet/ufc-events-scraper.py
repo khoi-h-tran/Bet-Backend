@@ -62,8 +62,10 @@ eventsPage.prettify("utf-8")
 
 eventsList = eventsPage.find_all("li", class_="l-listing__item")
 
+numEventsToFind = 1
+
 for index, eventListItem in enumerate(eventsList):
-    if index == 1 : break
+    if index == numEventsToFind : break
     linkDiv = eventsList[index].find("h3", class_="c-card-event--result__headline")
     linkHrefEl = linkDiv.find("a", href=re.compile("/event/ufc"))
     link = f"https://www.ufc.com{linkHrefEl.get('href')}"

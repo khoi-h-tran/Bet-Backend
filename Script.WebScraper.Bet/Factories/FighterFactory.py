@@ -47,7 +47,5 @@ def getFighterImages(fightEvents):
     fighterImageList = [ image for image in fighterImageList if "flag" not in image ]
     blankImage = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
     fighterImageList = [ blankImage if "silhouette" in image else image for image in fighterImageList ]
-    print(len(fighterImageList))
-    print(fighterImageList)
 
     return fighterImageList
