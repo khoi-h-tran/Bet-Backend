@@ -11,15 +11,11 @@ def buildEvents(eventPage, fighterList, fighterIndexStart, fighterIndexEnd):
         eventList.append(Event(weightClassList[weightClassIndex], fighterList[fighterIndex], fighterList[fighterIndex+1]))
         weightClassIndex += 1
 
-    # print(weightClassList)
-    # print(fighterList)
-    # for event in eventList:
-    #     print(event)
     return eventList
 
 def getFighterWeightClass(fightEvents):
     fighterWeightClassList = []
     for fightEvent in fightEvents:
-        fighterWeightClasss = fightEvent.find("div", class_="c-listing-fight__class")
+        fighterWeightClasss = fightEvent.find("div", class_="c-listing-fight__class-text")
         fighterWeightClassList.append(fighterWeightClasss.getText().strip())
     return fighterWeightClassList
