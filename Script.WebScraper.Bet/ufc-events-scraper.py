@@ -20,7 +20,7 @@ from Entities.Fighter import Fighter
 from Entities.Fighter import FighterSchema
 from Entities.UFCEvent import UFCEvent
 from Entities.UFCEvent import UFCEventSchema
-from Entities.UFCEvent import UFCEventsListSchema
+#from Entities.UFCEvent import UFCEventsListSchema
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -188,33 +188,30 @@ for eventIndex, ufcEventLink in enumerate(ufcEventLinks):
 
     driver.quit()
 
-jsonUFCEventsList = []
+ufcJSONEventsList = []
 
+# Creating a list of UFCEvents, where each UFCEvent is serialized into JSON, using it's pre-defined JSON Schema (using marshmallow library)
 for ufcEvent in ufcEventsList:
     schemaUfcEvents = UFCEventSchema()
     jsonResult = schemaUfcEvents.dump(ufcEvent)
-    jsonUFCEventsList.append(jsonResult)
+    ufcJSONEventsList.append(jsonResult)
 
-print(jsonUFCEventsList)
-        # # Define the required scopes
-        # scopes = [
-        #   "https://www.googleapis.com/auth/userinfo.email",
-        #   "https://www.googleapis.com/auth/firebase.database"
-        # ]
+# Storing python list in a JSON object
+jsonUFCEvents = json.dumps(ufcJSONEventsList)
 
-        # # Authenticate a credential with the service account
-        # credentials = service_account.Credentials.from_service_account_file(
-        #     "./Firebase/betapp-dc664-firebase-adminsdk-e8knc-75ba7d8701.json", scopes=scopes)
+# Define the required scopes
+scopes = [
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/firebase.database"
+]
 
-        # # Use the credentials object (taken from Firebase Console for Service Accounts) to authenticate a Requests session.
-        # authed_session = AuthorizedSession(credentials)
-        # # Use authorized session to write data
-        # response = authed_session.put(
-        #     "https://betapp-dc664-default-rtdb.firebaseio.com/UFCEvents.json", jsonUFCEventsList)
+# Authenticate a credential with the service account
+credentials = service_account.Credentials.from_service_account_file(
+    "./Firebase/betapp-dc664-firebase-adminsdk-e8knc-75ba7d8701.json", scopes=scopes)
 
-        # print(response.content)
+# Use the credentials object (taken from Firebase Console for Service Accounts) to authenticate a Requests session.
+authed_session = AuthorizedSession(credentials)
+# Use authorized session to write data
+response = authed_session.put(
+    "https://betapp-dc664-default-rtdb.firebaseio.com/UFCEvents.json", jsonUFCEvents)
 
-# Write to test database with no authentication
-# firebase = pyrebase.initialize_app(config)
-# db = firebase.database()
-# db.set(jsonUFCEventsList)

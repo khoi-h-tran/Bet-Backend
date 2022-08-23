@@ -29,5 +29,5 @@ class UFCEventSchema(Schema):
     eventVenue = fields.Str()
     eventCards = fields.List(fields.Nested(CardSchema), required=True)
 
-class UFCEventsListSchema(Schema):
-    test = fields.List(fields.Nested(UFCEventSchema), required=True)
+# class UFCEventsListSchema(Schema):
+#     ufcEvents = fields.List(fields.Nested(UFCEventSchema), required=True)
