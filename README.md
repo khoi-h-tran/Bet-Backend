@@ -8,8 +8,25 @@
 
 ## Screenshots
 
-### Script finds the next upcoming event
+### Static web scraping (using BeautifulSoup4) - finds the next upcoming event and pulls all relevant event info
 ![image](https://user-images.githubusercontent.com/59266614/187511060-40fbdf90-1a37-45c5-9c1a-b4ac704a58f7.png)
+
+### Dyanmic web scraping (using Selenium) - clicks on the next event and pulls all relevant figher info
+![image](https://user-images.githubusercontent.com/59266614/187512427-aed1df17-c2df-4c58-9660-0e580898f9a6.png)
+
+### Dyanmic web scraping (using Selenium) - clicks on each match-up and pulls the fighter records
+![image](https://user-images.githubusercontent.com/59266614/187512712-2296b949-6b4c-45c9-b249-5825ad680ae2.png)
+
+### Script serializes the scraped data (using Marshmallow) and sends the JSON to Firebase Realtime Database
+
+| Sample Database Images   |
+|----------|
+| Saving Event Info (e.g. Date, Arena, etc.) |
+| ![image](https://user-images.githubusercontent.com/59266614/187514534-2723fc4c-3459-4055-8278-265064104cbe.png) |
+| Saving Card Info |
+| ![image](https://user-images.githubusercontent.com/59266614/187514446-a8fe2ae6-f7f8-41b3-8f16-53be1186443a.png) |
+| Saving Fighter Info (e.g. Fighter Names, Images, Records, etc.) |
+| ![image](https://user-images.githubusercontent.com/59266614/187514278-73756e0f-a829-4a8f-ba91-a8c5f7f2517b.png) |
 
 ## Built With
 
