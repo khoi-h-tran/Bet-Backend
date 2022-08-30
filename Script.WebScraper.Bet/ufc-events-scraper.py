@@ -147,7 +147,7 @@ for eventIndex, ufcEventLink in enumerate(ufcEventLinks):
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     driver.get(ufcEventLink)
 
-    acceptButton = WebDriverWait(driver, timeout=10).until(lambda d: d.find_element(By.XPATH, "//*[@title='Accept Cookies Button']"))
+    acceptButton = WebDriverWait(driver, timeout=10).until(lambda d: d.find_element(By.ID, "onetrust-accept-btn-handler"))
     driver.execute_script("arguments[0].click();", acceptButton)
 
     matchUps = WebDriverWait(driver, timeout=10).until(lambda d: d.find_elements(By.CLASS_NAME, "c-listing-fight"))
@@ -165,10 +165,10 @@ for eventIndex, ufcEventLink in enumerate(ufcEventLinks):
         # Switch to the new iframe (similar to dialog or modal)
         driver.switch_to.frame(iframe)
 
-        fighter1Record = driver.find_element(By.CSS_SELECTOR, ".c-stat-compare__group-1.red")
+        fighter1Record = driver.find_element(By.CLASS_NAME, "c-stat-compare__group-1.red")
         fighter1RecordList.append(fighter1Record.get_attribute('innerHTML').strip())
 
-        fighter2Record = driver.find_element(By.CSS_SELECTOR, ".c-stat-compare__group-2.blue")
+        fighter2Record = driver.find_element(By.CLASS_NAME, "c-stat-compare__group-2.blue")
         fighter2RecordList.append(fighter2Record.get_attribute('innerHTML').strip())
 
         driver.switch_to.default_content()
