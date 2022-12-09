@@ -161,9 +161,10 @@ for eventIndex, ufcEventLink in enumerate(ufcEventLinks):
         driver.execute_script("arguments[0].click();", matchUp)
         # Waiting until the iframe loads the match up details
         matchUpDetails = WebDriverWait(driver, timeout=10).until(lambda d: d.find_element(By.CLASS_NAME, "dialog-off-canvas-main-canvas"))
-        iframe = WebDriverWait(driver, timeout=10).until(lambda d: d.find_element(By.TAG_NAME, "iframe"))
+        iframe = WebDriverWait(driver, timeout=10).until(lambda d: d.find_elements(By.TAG_NAME, "iframe"))
+        # print(len(iframe))
         # Switch to the new iframe (similar to dialog or modal)
-        driver.switch_to.frame(iframe)
+        driver.switch_to.frame(iframe[1])
 
         fighter1Record = driver.find_element(By.CLASS_NAME, "c-stat-compare__group-1.red")
         fighter1RecordList.append(fighter1Record.get_attribute('innerHTML').strip())
